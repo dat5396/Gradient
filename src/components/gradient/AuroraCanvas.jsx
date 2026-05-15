@@ -1,0 +1,47 @@
+import { useRef, useEffect } from 'react';
+import { useWebGL } from '../../hooks/useWebGL';
+import { useAnimationFrame } from '../../hooks/useAnimationFrame';
+import { buildAuroraShader } from '../../shaders/auroraShader';
+
+export default function AuroraCanvas({ params, speed, paused, canvasSize }) {
+    const canvasRef = useRef(null);
+    const { compileProgram, drawFrame, setColors } = useWebGL(canvasRef);
+    const { getTime } = useAnimationFrame({ paused, speed });
+    const progRef = useRef(null);
+    const rafRef = useRef(null);
+
+    // Compile once on mount
+    useEffect(() => {
+        progRef.current = compileProgram(buildAuroraShader());
+    }, [compileProgram]);
+
+    // Resize
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        canvas.width = canvasSize.w;
+        canvas.height = canvasSize.h;
+    }, [canvasSize]);
+
+    // Render loop — reads params.colors every frame
+    useEffect(() => {
+        function loop() {
+            const prog = progRef.current;
+            if (prog) {
+                drawFrame(prog, (gl) => {
+                    gl.uniform2f(gl.getUniformLocation(prog, 'R'),
+                        gl.drawingBufferWidth, gl.drawingBufferHeight);
+                    gl.uniform1f(gl.getUniformLocation(prog, 'T'), getTime());
+                    gl.uniform1f(gl.getUniformLocation(prog, 'uBlobSize'), params.blobSize);
+                    gl.uniform1f(gl.getUniformLocation(prog, 'uPalSpeed'), params.palSpeed);
+                    setColors(gl, prog, 'uColors', params.colors);
+                });
+            }
+            if (!paused) rafRef.current = requestAnimationFrame(loop);
+        }
+        rafRef.current = requestAnimationFrame(loop);
+        return () => cancelAnimationFrame(rafRef.current);
+    }, [paused, params, drawFrame, getTime, setColors]);
+
+    return <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />;
+}
