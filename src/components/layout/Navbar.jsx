@@ -169,7 +169,7 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
         }}>
             {/* Logo — left column */}
             <div>
-                <img src='/gradient-logo.svg' width={108} height={36} />
+                <img src='/gradient-logo-1.svg' width={108} height={36} />
             </div>
 
             {/* Tabs — center column */}
