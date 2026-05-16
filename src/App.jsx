@@ -22,7 +22,7 @@ export default function App() {
   const exportRef = useRef(null);
 
   const buildShader =
-    activeGradient === 'flowing' ? buildFlowingShader :
+    activeGradient === 'wave' ? buildFlowingShader :
       activeGradient === 'aurora' ? buildAuroraShader :
         activeGradient === 'mercury' ? buildMercuryShader :
           buildPlasmaShader;

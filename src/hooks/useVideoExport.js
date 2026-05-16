@@ -26,8 +26,37 @@ function setColors(gl, prog, uniformName, hexColors) {
     if (countLoc) gl.uniform1i(countLoc, hexColors.length);
 }
 
+// Mirrors buildGradientTexture() in FlowingCanvas.
+function buildGradientTexture(gl, hexColors) {
+    const TEX_WIDTH = 256;
+    const offscreen = document.createElement('canvas');
+    offscreen.width = TEX_WIDTH;
+    offscreen.height = 1;
+    const ctx = offscreen.getContext('2d');
+
+    const grd = ctx.createLinearGradient(0, 0, TEX_WIDTH, 0);
+    hexColors.forEach((hex, i) => {
+        const [r, g, b] = hexToVec3(hex);
+        grd.addColorStop(
+            i / Math.max(hexColors.length - 1, 1),
+            `rgb(${Math.round(r * 255)},${Math.round(g * 255)},${Math.round(b * 255)})`
+        );
+    });
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, TEX_WIDTH, 1);
+
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, offscreen);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    return tex;
+}
+
 function buildGL(buildShader) {
-    // WebGL renders into a regular canvas
     const glCanvas = document.createElement('canvas');
     glCanvas.width = WIDTH;
     glCanvas.height = HEIGHT;
@@ -53,7 +82,6 @@ function buildGL(buildShader) {
     gl.bufferData(gl.ARRAY_BUFFER,
         new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 
-    // 2D canvas is what VideoFrame will actually read from
     const canvas2d = document.createElement('canvas');
     canvas2d.width = WIDTH;
     canvas2d.height = HEIGHT;
@@ -62,19 +90,59 @@ function buildGL(buildShader) {
     return { gl, buf, prog, glCanvas, canvas2d, ctx2d };
 }
 
-function makeSetUniforms(activeGradient, params) {
+// FIX 1: `p` is already the active-gradient param slice — App.jsx passes
+// params[activeGradient], so we use it directly without re-indexing.
+function makeSetUniforms(activeGradient, p) {
+    if (activeGradient === 'aurora') {
+        return function (gl, prog, time) {
+            gl.uniform2f(gl.getUniformLocation(prog, 'R'), WIDTH, HEIGHT);
+            gl.uniform1f(gl.getUniformLocation(prog, 'T'), time);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uBlobSize'), p.blobSize);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uPalSpeed'), p.palSpeed);
+            setColors(gl, prog, 'uColors', p.colors);
+        };
+    }
+
+    if (activeGradient === 'mercury') {
+        return function (gl, prog, time) {
+            gl.uniform2f(gl.getUniformLocation(prog, 'R'), WIDTH, HEIGHT);
+            gl.uniform1f(gl.getUniformLocation(prog, 'T'), time);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uFlow'), p.flow ?? 0.4);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uScale'), p.scale ?? 1.2);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uSheen'), p.sheen ?? 0.5);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uNoise'), p.noise ?? 0.06);
+            setColors(gl, prog, 'uColors', p.colors);
+        };
+    }
+
+    // FIX 2: App.jsx uses the key 'wave' (not 'flowing') for the wave/flowing gradient.
+    if (activeGradient === 'wave') {
+        let gradTex = null;
+        return function (gl, prog, time) {
+            if (!gradTex) {
+                const colors = p.colors?.length ? p.colors : ['#000000', '#ffffff'];
+                gradTex = buildGradientTexture(gl, colors);
+            }
+            gl.uniform2f(gl.getUniformLocation(prog, 'R'), WIDTH, HEIGHT);
+            gl.uniform1f(gl.getUniformLocation(prog, 'T'), time);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uWaveAmp'), p.waveAmp ?? 1.0);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uWaveSpeed'), p.waveSpeed ?? 1.0);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uBlurAmt'), p.blurAmt ?? 0.5);
+            gl.uniform1f(gl.getUniformLocation(prog, 'uScale'), p.scale ?? 1.0);
+            setColors(gl, prog, 'uColors', p.colors ?? ['#000000']);
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, gradTex);
+            gl.uniform1i(gl.getUniformLocation(prog, 'uGradientTex'), 1);
+        };
+    }
+
+    // plasma (default)
     return function (gl, prog, time) {
         gl.uniform2f(gl.getUniformLocation(prog, 'R'), WIDTH, HEIGHT);
         gl.uniform1f(gl.getUniformLocation(prog, 'T'), time);
-        if (activeGradient === 'aurora') {
-            gl.uniform1f(gl.getUniformLocation(prog, 'uBlobSize'), params.blobSize);
-            gl.uniform1f(gl.getUniformLocation(prog, 'uPalSpeed'), params.palSpeed);
-        } else {
-            gl.uniform1f(gl.getUniformLocation(prog, 'uDensity'), params.density);
-            gl.uniform1f(gl.getUniformLocation(prog, 'uSat'), params.saturation);
-            gl.uniform1f(gl.getUniformLocation(prog, 'uBright'), params.brightness);
-        }
-        setColors(gl, prog, 'uColors', params.colors);
+        gl.uniform1f(gl.getUniformLocation(prog, 'uDensity'), p.density ?? 1.0);
+        gl.uniform1f(gl.getUniformLocation(prog, 'uWarp'), p.warp ?? 0.5);
+        setColors(gl, prog, 'uColors', p.colors);
     };
 }
 
@@ -89,9 +157,6 @@ function drawGL(gl, buf, prog, setUniforms, time) {
     const err = gl.getError();
     if (err !== gl.NO_ERROR) console.error('GL error before draw:', err);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    const px = new Uint8Array(4);
-    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
-    console.log('First pixel after draw:', px[0], px[1], px[2], px[3]);
 }
 
 export function useVideoExport({ activeGradient, params, buildShader }) {
@@ -106,7 +171,10 @@ export function useVideoExport({ activeGradient, params, buildShader }) {
         const ctx = buildGL(buildShader);
         if (!ctx) { console.error('WebGL not available'); setProgress(null); return; }
         const { gl, buf, prog, glCanvas, canvas2d, ctx2d } = ctx;
+
+        // `params` is already the active-gradient slice from App.jsx
         const setUniforms = makeSetUniforms(activeGradient, params);
+
         console.log('Export params:', JSON.stringify(params));
         console.log('Active gradient:', activeGradient);
         console.log('buildShader result length:', buildShader().length);
@@ -142,14 +210,9 @@ export function useVideoExport({ activeGradient, params, buildShader }) {
                 if (abortRef.current) break;
 
                 const time = i / FPS;
-
-                // 1. Render to WebGL canvas
                 drawGL(gl, buf, prog, setUniforms, time);
-
-                // 2. Copy WebGL → 2D canvas via drawImage (browser handles GPU readback)
                 ctx2d.drawImage(glCanvas, 0, 0);
 
-                // 3. VideoFrame from 2D canvas — the only reliably working source
                 const frame = new VideoFrame(canvas2d, {
                     timestamp: Math.round(time * 1_000_000),
                     duration: Math.round(1_000_000 / FPS),
