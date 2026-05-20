@@ -225,7 +225,7 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
                                 border: `1px solid ${t.color.border}`,
                                 borderRadius: t.radius.lg,
                                 padding: '4px',
-                                minWidth: '120px',
+                                minWidth: '140px',
                                 boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                                 zIndex: 100,
                             }}>
@@ -235,7 +235,7 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
                                 onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                 style={menuItemStyle(t)}>
                                 <IconPhoto />
-                                Image
+                                Image • PNG
                             </button>
                             <button
                                 onClick={handleVideo}
@@ -243,7 +243,7 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
                                 onMouseLeave={e => e.currentTarget.style.background = 'none'}
                                 style={menuItemStyle(t)}>
                                 <IconVideo />
-                                Video
+                                Video • MP4
                             </button>
                         </div>
                     )}
