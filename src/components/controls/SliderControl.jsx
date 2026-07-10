@@ -80,7 +80,7 @@ export default function SliderControl({
                 onBlur={handleInputBlur}
                 style={{
                     width: '100%',
-                    background: hovered ? 'rgba(255,255,255,0.05)' : 'transparent',
+                    background: hovered ? t.color.overlayHover : 'transparent',
                     border: `1px solid ${hovered ? t.color.border : 'transparent'}`,
                     borderRadius: t.radius.sm,
                     outline: 'none',
@@ -113,7 +113,7 @@ export default function SliderControl({
                     appearance: 'none',
                     WebkitAppearance: 'none',
                     borderRadius: '999px',
-                    background: `linear-gradient(to right, ${t.color.textMuted} 0%, ${t.color.textMuted} ${((value - min) / (max - min)) * 100}%, rgba(255,255,255,0.15) ${((value - min) / (max - min)) * 100}%, rgba(255,255,255,0.15) 100%)`,
+                    background: `linear-gradient(to right, ${t.color.textMuted} 0%, ${t.color.textMuted} ${((value - min) / (max - min)) * 100}%, ${t.color.sliderTrack} ${((value - min) / (max - min)) * 100}%, ${t.color.sliderTrack} 100%)`,
                 }}
             />
         </div>

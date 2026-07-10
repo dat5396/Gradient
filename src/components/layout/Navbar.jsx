@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { tokens as t } from '../../styles/tokens';
+import ThemeToggle from './ThemeToggle';
+import { useTheme } from './UseTheme';
 
 const TABS = ['mercury', 'wave', 'plasma'];
 const TAB_LABELS = { mercury: 'Mercury', wave: 'Wave', plasma: 'Plasma' };
@@ -57,15 +59,15 @@ function TabButton({ id, active, onSwitch }) {
                 style={{
                     position: 'relative',
                     background: active
-                        ? 'rgba(255, 255, 255, 0.08)'
+                        ? t.color.overlaySubtle
                         : hovered
-                            ? 'rgba(255, 255, 255, 0.04)'
+                            ? t.color.overlayHover
                             : 'none',
                     border: 'none',
                     color: active
                         ? t.color.text
                         : hovered
-                            ? 'rgba(255,255,255,0.75)'
+                            ? t.color.overlayHoverText
                             : t.color.textMuted,
                     fontFamily: t.font.sans,
                     fontSize: t.fontSize.base,
@@ -99,7 +101,7 @@ function TabButton({ id, active, onSwitch }) {
                     border: `2px solid ${t.color.border}`,
                     borderRadius: t.radius.lg,
                     overflow: 'hidden',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
+                    boxShadow: `0 12px 40px ${t.color.shadowPreview}`,
                     width: '180px',
                 }}>
                     <img
@@ -125,6 +127,8 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
     const buttonRef = useRef(null);
 
     const isExporting = exportVideoProgress !== null;
+    const { theme } = useTheme();
+    const logoSrc = theme === 'light' ? '/gradient-logo-2-black.svg' : '/gradient-logo-2.svg';
 
     // Preload preview images on mount
     useEffect(() => { preloadImages(); }, []);
@@ -163,13 +167,13 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
             height: '66px',
             padding: `0 ${t.space[6]}`,
             borderBottom: `1px solid ${t.color.border}`,
-            background: 'rgba(8,8,8,0.95)',
+            background: t.color.navBg,
             backdropFilter: 'blur(12px)',
             fontFamily: t.font.sans,
         }}>
             {/* Logo — left column */}
             <div>
-                <img src='/gradient-logo-2.svg' width={108} height={36} />
+                <img src={logoSrc} width={108} height={36} />
             </div>
 
             {/* Tabs — center column */}
@@ -177,7 +181,7 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
                 display: 'flex',
                 alignItems: 'center',
                 gap: '2px',
-                background: 'rgba(255, 255, 255, 0.08)',
+                background: t.color.overlaySubtle,
                 borderRadius: t.radius.full,
                 padding: `${t.space[1]}`,
             }}>
@@ -191,8 +195,10 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
                 ))}
             </div>
 
-            {/* Export button + popover — right column */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            {/* Theme toggle + Export button + popover — right column */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: t.space[3] }}>
+                <ThemeToggle />
+
                 <div style={{ position: 'relative' }}>
                     <button
                         ref={buttonRef}
@@ -202,7 +208,7 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
                             borderRadius: t.radius.lg,
                             background: t.color.accent,
                             border: 'none',
-                            color: t.color.text,
+                            color: t.color.textOnPrimary,
                             fontFamily: t.font.sans,
                             fontSize: t.fontSize.base,
                             fontWeight: t.fontWeight.medium,
@@ -226,7 +232,7 @@ export default function Navbar({ active, onSwitch, onExport, onExportVideo, expo
                                 borderRadius: t.radius.lg,
                                 padding: '4px',
                                 minWidth: '140px',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                                boxShadow: `0 8px 32px ${t.color.shadowPopover}`,
                                 zIndex: 100,
                             }}>
                             <button

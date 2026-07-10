@@ -54,8 +54,8 @@ export default function PalettePicker({
                         gap: t.space[2],
                         width: '100%',
                         padding: `${t.space[2]} 0`,
-                        background: 'rgba(255,255,255,0.03)',
-                        border: `1px ${t.color.border}`,
+                        background: t.color.surface,
+                        // border: `1px solid ${t.color.border}`,
                         borderRadius: t.radius.md,
                         cursor: 'pointer',
                         color: t.color.textMuted,
@@ -66,10 +66,12 @@ export default function PalettePicker({
                         height: '32px',
                     }}
                     onMouseEnter={e => {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
                         e.currentTarget.style.borderColor = t.color.borderHover;
                         e.currentTarget.style.color = t.color.text;
                     }}
                     onMouseLeave={e => {
+                        e.currentTarget.style.background = t.color.surface;
                         e.currentTarget.style.borderColor = t.color.border;
                         e.currentTarget.style.color = t.color.textMuted;
                     }}

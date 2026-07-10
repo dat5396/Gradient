@@ -21,17 +21,17 @@ export default function PreviewArea({
         <div style={{
             position: 'relative', display: 'flex',
             alignItems: 'center', justifyContent: 'center',
-            overflow: 'hidden', background: '#040404', width: '100%', height: '100%',
+            overflow: 'hidden', background: t.color.previewBg, width: '100%', height: '100%',
         }}>
 
             {/* Checker background */}
             <div style={{
                 position: 'absolute', inset: 0, opacity: 0.2,
                 backgroundImage: `
-          linear-gradient(45deg, #111 25%, transparent 25%),
-          linear-gradient(-45deg, #111 25%, transparent 25%),
-          linear-gradient(45deg, transparent 75%, #111 75%),
-          linear-gradient(-45deg, transparent 75%, #111 75%)`,
+          linear-gradient(45deg, ${t.color.checker} 25%, transparent 25%),
+          linear-gradient(-45deg, ${t.color.checker} 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, ${t.color.checker} 75%),
+          linear-gradient(-45deg, transparent 75%, ${t.color.checker} 75%)`,
                 backgroundSize: '20px 20px',
                 backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0',
             }} />
@@ -46,7 +46,7 @@ export default function PreviewArea({
                     maxWidth: '100%',
                     maxHeight: '100%',
                     outline: `1px solid ${t.color.border}`,
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                    boxShadow: `0 25px 60px ${t.color.shadowPreview}`,
                     cursor: paused ? 'pointer' : 'default',  // optional UX hint
                 }}
             >

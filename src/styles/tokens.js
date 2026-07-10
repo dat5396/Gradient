@@ -31,25 +31,42 @@ export const tokens = {
     },
 
     // ─── Colour ───────────────────────────────────────────────────────────
+    // These reference CSS custom properties defined in global.css, so
+    // every component using these tokens auto-adapts when data-theme flips.
     color: {
-        bg: '#080808',
-        surface: '#111113',
-        surface2: '#181820',
+        bg: 'var(--color-bg)',
+        surface: 'var(--color-surface)',
+        surface2: 'var(--color-surface2)',
 
-        text: '#ededea',
-        textMuted: 'rgba(237, 237, 234, 0.68)',
-        textDim: 'rgba(237,237,234,0.20)',
+        text: 'var(--color-text)',
+        textMuted: 'var(--color-text-muted)',
+        textDim: 'var(--color-text-dim)',
+        textOnPrimary: 'var(--color-text-on-primary)',
 
-        border: 'rgba(255,255,255,0.07)',
-        borderHover: 'rgba(255,255,255,0.15)',
+        border: 'var(--color-border)',
+        borderHover: 'var(--color-border-hover)',
 
-        accent: '#6860f7ff',
-        accentDim: 'rgba(184,255,87,0.1)',
+        accent: 'var(--color-accent)',
+        accentDim: 'var(--color-accent-dim)',
 
-        webgl: '#7eb8ff',
-        webglDim: 'rgba(126,184,255,0.1)',
-        canvas2d: '#ff7eb8',
-        canvas2dDim: 'rgba(255,126,184,0.1)',
+        webgl: 'var(--color-webgl)',
+        webglDim: 'var(--color-webgl-dim)',
+        canvas2d: 'var(--color-canvas2d)',
+        canvas2dDim: 'var(--color-canvas2d-dim)',
+
+        // Overlay / chrome tokens (previously hardcoded rgba() in components)
+        overlaySubtle: 'var(--overlay-subtle)',
+        overlayHover: 'var(--overlay-hover)',
+        overlayHoverText: 'var(--overlay-hover-text)',
+
+        navBg: 'var(--nav-bg)',
+        shadowPopover: 'var(--shadow-popover)',
+        shadowPreview: 'var(--shadow-preview)',
+
+        previewBg: 'var(--preview-bg)',
+        checker: 'var(--checker-color)',
+
+        sliderTrack: 'var(--slider-track)',
     },
 
     // ─── Spacing ──────────────────────────────────────────────────────────
